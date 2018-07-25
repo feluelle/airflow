@@ -75,7 +75,8 @@ class TestImapHook(unittest.TestCase):
 
         with ImapHook() as imap_hook:
             has_attachment_in_inbox = imap_hook.has_mail_attachments('test1.csv')
-            self.assertTrue(has_attachment_in_inbox)
+
+        self.assertTrue(has_attachment_in_inbox)
 
     @patch(imaplib_string)
     def test_has_mail_attachments_not_found(self, mock_imaplib):
@@ -83,23 +84,32 @@ class TestImapHook(unittest.TestCase):
 
         with ImapHook() as imap_hook:
             has_attachment_in_inbox = imap_hook.has_mail_attachments('test1.txt')
-            self.assertFalse(has_attachment_in_inbox)
+
+        self.assertFalse(has_attachment_in_inbox)
 
     @patch(imaplib_string)
     def test_has_mail_attachments_with_regex_found(self, mock_imaplib):
         _create_fake_imap(mock_imaplib, with_mail=True)
 
         with ImapHook() as imap_hook:
-            has_attachment_in_inbox = imap_hook.has_mail_attachments('test(\d+).csv', check_regex=True)
-            self.assertTrue(has_attachment_in_inbox)
+            has_attachment_in_inbox = imap_hook.has_mail_attachments(
+                name='test(\d+).csv',
+                check_regex=True
+            )
+
+        self.assertTrue(has_attachment_in_inbox)
 
     @patch(imaplib_string)
     def test_has_mail_attachments_with_regex_not_found(self, mock_imaplib):
         _create_fake_imap(mock_imaplib, with_mail=True)
 
         with ImapHook() as imap_hook:
-            has_attachment_in_inbox = imap_hook.has_mail_attachments('test_(\d+).csv', check_regex=True)
-            self.assertFalse(has_attachment_in_inbox)
+            has_attachment_in_inbox = imap_hook.has_mail_attachments(
+                name='test_(\d+).csv',
+                check_regex=True
+            )
+
+        self.assertFalse(has_attachment_in_inbox)
 
     @patch(imaplib_string)
     def test_retrieve_mail_attachments_found(self, mock_imaplib):
@@ -124,7 +134,10 @@ class TestImapHook(unittest.TestCase):
         _create_fake_imap(mock_imaplib, with_mail=True)
 
         with ImapHook() as imap_hook:
-            attachments_in_inbox = imap_hook.retrieve_mail_attachments('test(\d+).csv', check_regex=True)
+            attachments_in_inbox = imap_hook.retrieve_mail_attachments(
+                name='test(\d+).csv',
+                check_regex=True
+            )
 
         self.assertEquals(attachments_in_inbox, [('test1.csv', b'SWQsTmFtZQoxLEZlbGl4')])
 
@@ -133,7 +146,10 @@ class TestImapHook(unittest.TestCase):
         _create_fake_imap(mock_imaplib, with_mail=True)
 
         with ImapHook() as imap_hook:
-            attachments_in_inbox = imap_hook.retrieve_mail_attachments('test_(\d+).csv', check_regex=True)
+            attachments_in_inbox = imap_hook.retrieve_mail_attachments(
+                name='test_(\d+).csv',
+                check_regex=True
+            )
 
         self.assertEquals(attachments_in_inbox, [])
 

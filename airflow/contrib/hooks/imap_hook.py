@@ -24,7 +24,8 @@ class ImapHook(BaseHook):
     """
     This hook connects to a mail server by using the imap protocol.
 
-    :param imap_conn_id: The connection id that contains the information used to authenticate the client.
+    :param imap_conn_id: The connection id that contains the information
+                         used to authenticate the client.
                          The default value is 'imap_default'.
     :type imap_conn_id: str
     """
@@ -56,7 +57,8 @@ class ImapHook(BaseHook):
         :returns: True if there is an attachment with the given name and False if not.
         :rtype: bool
         """
-        mail_attachments = self._retrieve_mails_attachments_by_name(name, mail_folder, check_regex)
+        mail_attachments = self._retrieve_mails_attachments_by_name(name, mail_folder,
+                                                                    check_regex)
         return len(mail_attachments) > 0
 
     def retrieve_mail_attachments(self, name, mail_folder='INBOX', check_regex=False):
@@ -74,16 +76,20 @@ class ImapHook(BaseHook):
         :returns: a list of tuple each containing the attachment filename and its payload.
         :rtype: a list of tuple
         """
-        mail_attachments = self._retrieve_mails_attachments_by_name(name, mail_folder, check_regex)
+        mail_attachments = self._retrieve_mails_attachments_by_name(name, mail_folder,
+                                                                    check_regex)
         return mail_attachments
 
-    def download_mail_attachments(self, name, local_output_directory, mail_folder='INBOX', check_regex=False):
+    def download_mail_attachments(self, name, local_output_directory, mail_folder='INBOX',
+                                  check_regex=False):
         """
-        Downloads email's attachments in the mail folder by its name to the local directory.
+        Downloads email's attachments in the mail folder by its name
+        to the local directory.
 
         :param name: The name of the attachment that will be downloaded.
         :type name: str
-        :param local_output_directory: The output directory on the local machine where the files will be downloaded to.
+        :param local_output_directory: The output directory on the local machine
+                                       where the files will be downloaded to.
         :type local_output_directory: str
         :param mail_folder: The mail folder where to look at.
                             The default value is 'INBOX'.
@@ -92,7 +98,8 @@ class ImapHook(BaseHook):
                             The default value is False.
         :type check_regex: bool
         """
-        mail_attachments = self._retrieve_mails_attachments_by_name(name, mail_folder, check_regex)
+        mail_attachments = self._retrieve_mails_attachments_by_name(name, mail_folder,
+                                                                    check_regex)
         self._download_files(mail_attachments, local_output_directory)
 
     def _retrieve_mails_attachments_by_name(self, name, mail_folder, check_regex):
@@ -158,7 +165,8 @@ class Mail(LoggingMixin):
         :type name: str
         :param check_regex: Checks the name for a regular expression.
         :type check_regex: bool
-        :returns: a list of tuples each containing name and payload where the attachments name matches the given name.
+        :returns: a list of tuples each containing name and payload
+                  where the attachments name matches the given name.
         :rtype: list of tuple
         """
         attachments = []
@@ -166,7 +174,8 @@ class Mail(LoggingMixin):
         for part in self.mail.walk():
             mail_part = MailPart(part)
             if mail_part.is_attachment():
-                found_attachment = mail_part.has_similar_name(name) if check_regex else mail_part.has_equal_name(name)
+                found_attachment = mail_part.has_similar_name(name) if check_regex \
+                    else mail_part.has_equal_name(name)
                 if found_attachment:
                     file_name, file_payload = mail_part.get_file()
                     self.log.info('Found attachment: {}'.format(file_name))
@@ -193,7 +202,8 @@ class MailPart:
         :return: True if it is an attachment and False if not.
         :rtype: bool
         """
-        return self.part.get_content_maintype() != 'multipart' and self.part.get('Content-Disposition')
+        return self.part.get_content_maintype() != 'multipart' and self.part.get(
+            'Content-Disposition')
 
     def has_similar_name(self, name):
         """
