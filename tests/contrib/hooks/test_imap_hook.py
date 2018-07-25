@@ -15,10 +15,7 @@
 import imaplib
 import unittest
 
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
+from mock import Mock, patch
 
 from airflow import configuration, models
 from airflow.contrib.hooks.imap_hook import ImapHook
