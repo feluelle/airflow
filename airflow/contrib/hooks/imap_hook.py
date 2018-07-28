@@ -103,7 +103,7 @@ class ImapHook(BaseHook):
         self._download_files(mail_attachments, local_output_directory)
 
     def _retrieve_mails_attachments_by_name(self, name, mail_folder, check_regex):
-        all_mails_attachments = []
+        all_matching_attachments = []
 
         self.mail_client.select(mail_folder)
 
@@ -111,12 +111,12 @@ class ImapHook(BaseHook):
             response_mail_body = self._fetch_mail_body(mail_id)
             mail = Mail(response_mail_body)
             if mail.has_attachments():
-                mail_attachments = mail.get_attachments_by_name(name, check_regex)
-                all_mails_attachments.extend(mail_attachments)
+                matching_attachments = mail.get_attachments_by_name(name, check_regex)
+                all_matching_attachments.extend(matching_attachments)
 
         self.mail_client.close()
 
-        return all_mails_attachments
+        return all_matching_attachments
 
     def _list_mail_ids_desc(self):
         result, data = self.mail_client.search(None, 'All')
