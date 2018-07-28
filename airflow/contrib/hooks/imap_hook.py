@@ -112,8 +112,7 @@ class ImapHook(BaseHook):
             mail = Mail(response_mail_body)
             if mail.has_attachments():
                 mail_attachments = mail.get_attachments_by_name(name, check_regex)
-                for mail_attachment in mail_attachments:
-                    all_mails_attachments.append(mail_attachment)
+                all_mails_attachments.extend(mail_attachments)
 
         self.mail_client.close()
 
