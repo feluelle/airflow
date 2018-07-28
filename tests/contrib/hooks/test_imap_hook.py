@@ -15,13 +15,14 @@
 import imaplib
 import unittest
 
-from mock import Mock, patch
+from mock import Mock, patch, mock_open
 
 from airflow import configuration, models
 from airflow.contrib.hooks.imap_hook import ImapHook
 from airflow.utils import db
 
 imaplib_string = 'airflow.contrib.hooks.imap_hook.imaplib'
+open_string = 'airflow.contrib.hooks.imap_hook.open'
 
 
 def _create_fake_imap(mock_imaplib, with_mail=False):
@@ -154,10 +155,59 @@ class TestImapHook(unittest.TestCase):
 
         self.assertEquals(attachments_in_inbox, [])
 
-    # TODO Add test_download_mail_attachments_found
-    # TODO Add test_download_mail_attachments_not_found
-    # TODO Add test_download_mail_attachments_with_regex_found
-    # TODO Add test_download_mail_attachments_with_regex_not_found
+    @patch(open_string, new_callable=mock_open)
+    @patch(imaplib_string)
+    def test_download_mail_attachments_found(self, mock_imaplib, mock_open_method):
+        _create_fake_imap(mock_imaplib, with_mail=True)
+
+        with ImapHook() as imap_hook:
+            imap_hook.download_mail_attachments('test1.csv', 'test_directory')
+
+        mock_open_method.assert_called_once_with('test_directory/test1.csv', 'wb')
+        mock_open_method().write.assert_called_once_with(b'SWQsTmFtZQoxLEZlbGl4')
+
+    @patch(open_string, new_callable=mock_open)
+    @patch(imaplib_string)
+    def test_download_mail_attachments_not_found(self, mock_imaplib, mock_open_method):
+        _create_fake_imap(mock_imaplib, with_mail=True)
+
+        with ImapHook() as imap_hook:
+            imap_hook.download_mail_attachments('test1.txt', 'test_directory')
+
+        mock_open_method.assert_not_called()
+        mock_open_method().write.assert_not_called()
+
+    @patch(open_string, new_callable=mock_open)
+    @patch(imaplib_string)
+    def test_download_mail_attachments_with_regex_found(self, mock_imaplib,
+                                                        mock_open_method):
+        _create_fake_imap(mock_imaplib, with_mail=True)
+
+        with ImapHook() as imap_hook:
+            imap_hook.download_mail_attachments(
+                name='test(\d+).csv',
+                local_output_directory='test_directory',
+                check_regex=True
+            )
+
+        mock_open_method.assert_called_once_with('test_directory/test1.csv', 'wb')
+        mock_open_method().write.assert_called_once_with(b'SWQsTmFtZQoxLEZlbGl4')
+
+    @patch(open_string, new_callable=mock_open)
+    @patch(imaplib_string)
+    def test_download_mail_attachments_with_regex_not_found(self, mock_imaplib,
+                                                            mock_open_method):
+        _create_fake_imap(mock_imaplib, with_mail=True)
+
+        with ImapHook() as imap_hook:
+            imap_hook.download_mail_attachments(
+                name='test_(\d+).csv',
+                local_output_directory='test_directory',
+                check_regex=True
+            )
+
+        mock_open_method.assert_not_called()
+        mock_open_method().write.assert_not_called()
 
 
 if __name__ == '__main__':
