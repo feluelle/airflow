@@ -1755,7 +1755,7 @@ class TaskInstance(Base, LoggingMixin):
                 self.state = State.UP_FOR_RETRY
                 self.log.info('Marking task as UP_FOR_RETRY')
                 if task.email_on_retry and task.email:
-                    self.email_alert(error, is_retry=True)
+                    self.email_alert(error)
             else:
                 self.state = State.FAILED
                 if task.retries:
@@ -1763,7 +1763,7 @@ class TaskInstance(Base, LoggingMixin):
                 else:
                     self.log.info('Marking task as FAILED.')
                 if task.email_on_failure and task.email:
-                    self.email_alert(error, is_retry=False)
+                    self.email_alert(error)
         except Exception as e2:
             self.log.error('Failed to send email to: %s', task.email)
             self.log.exception(e2)
@@ -1927,7 +1927,7 @@ class TaskInstance(Base, LoggingMixin):
                 rendered_content = rt(attr, content, jinja_context)
                 setattr(task, attr, rendered_content)
 
-    def email_alert(self, exception, is_retry=False):
+    def email_alert(self, exception):
         task = self.task
         title = "Airflow alert: {self}".format(**locals())
         exception = str(exception).replace('\n', '<br>')
@@ -3905,10 +3905,15 @@ class DAG(BaseDag, LoggingMixin):
         upstream and downstream neighbours based on the flag passed.
         """
 
+        # deep-copying self.task_dict takes a long time, and we don't want all
+        # the tasks anyway, so we copy the tasks manually later
+        task_dict = self.task_dict
+        self.task_dict = {}
         dag = copy.deepcopy(self)
+        self.task_dict = task_dict
 
         regex_match = [
-            t for t in dag.tasks if re.findall(task_regex, t.task_id)]
+            t for t in self.tasks if re.findall(task_regex, t.task_id)]
         also_include = []
         for t in regex_match:
             if include_downstream:
@@ -3917,7 +3922,9 @@ class DAG(BaseDag, LoggingMixin):
                 also_include += t.get_flat_relatives(upstream=True)
 
         # Compiling the unique list of tasks that made the cut
-        dag.task_dict = {t.task_id: t for t in regex_match + also_include}
+        # Make sure to not recursively deepcopy the dag while copying the task
+        dag.task_dict = {t.task_id: copy.deepcopy(t, {id(t.dag): t.dag})
+                         for t in regex_match + also_include}
         for t in dag.tasks:
             # Removing upstream/downstream references to tasks that did not
             # made the cut
@@ -4475,7 +4482,7 @@ class XCom(Base, LoggingMixin):
     key = Column(String(512))
     value = Column(LargeBinary)
     timestamp = Column(
-        DateTime, default=timezone.utcnow, nullable=False)
+        UtcDateTime, default=timezone.utcnow, nullable=False)
     execution_date = Column(UtcDateTime, nullable=False)
 
     # source information
