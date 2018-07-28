@@ -173,7 +173,7 @@ class Mail(LoggingMixin):
         for part in self.mail.walk():
             mail_part = MailPart(part)
             if mail_part.is_attachment():
-                found_attachment = mail_part.has_similar_name(name) if check_regex \
+                found_attachment = mail_part.has_matching_name(name) if check_regex \
                     else mail_part.has_equal_name(name)
                 if found_attachment:
                     file_name, file_payload = mail_part.get_file()
@@ -198,13 +198,13 @@ class MailPart:
         """
         Checks if the part is a valid mail attachment.
 
-        :return: True if it is an attachment and False if not.
+        :returns: True if it is an attachment and False if not.
         :rtype: bool
         """
         return self.part.get_content_maintype() != 'multipart' and self.part.get(
             'Content-Disposition')
 
-    def has_similar_name(self, name):
+    def has_matching_name(self, name):
         """
         Checks if the given name matches the part's name.
 
@@ -221,7 +221,7 @@ class MailPart:
 
         :param name: The name to look for.
         :type name: str
-        :return: True if it is equal to the given name.
+        :returns: True if it is equal to the given name.
         :rtype: bool
         """
         return self.part.get_filename() == name
