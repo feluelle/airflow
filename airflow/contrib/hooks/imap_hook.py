@@ -44,7 +44,7 @@ class ImapHook(BaseHook):
 
     def has_mail_attachments(self, name, mail_folder='INBOX', check_regex=False):
         """
-        Checks the mail folder for a mail containing attachments with the given name.
+        Checks the mail folder for mails containing attachments with the given name.
 
         :param name: The name of the attachment that will be searched for.
         :type name: str
@@ -63,7 +63,7 @@ class ImapHook(BaseHook):
 
     def retrieve_mail_attachments(self, name, mail_folder='INBOX', check_regex=False):
         """
-        Retrieves email's attachments in the mail folder by its name.
+        Retrieves mail's attachments in the mail folder by its name.
 
         :param name: The name of the attachment that will be downloaded.
         :type name: str
@@ -83,7 +83,7 @@ class ImapHook(BaseHook):
     def download_mail_attachments(self, name, local_output_directory, mail_folder='INBOX',
                                   check_regex=False):
         """
-        Downloads email's attachments in the mail folder by its name
+        Downloads mail's attachments in the mail folder by its name
         to the local directory.
 
         :param name: The name of the attachment that will be downloaded.
@@ -125,9 +125,9 @@ class ImapHook(BaseHook):
 
     def _fetch_mail_body(self, mail_id):
         result, data = self.mail_client.fetch(mail_id, '(RFC822)')
-        email_body = data[0][1]  # The email body is always in this specific location
-        email_body_str = email_body.decode('utf-8')
-        return email_body_str
+        mail_body = data[0][1]  # The mail body is always in this specific location
+        mail_body_str = mail_body.decode('utf-8')
+        return mail_body_str
 
     def _download_files(self, mail_attachments, local_output_directory):
         for name, payload in mail_attachments:
@@ -137,15 +137,15 @@ class ImapHook(BaseHook):
 
 class Mail(LoggingMixin):
     """
-    This class simplifies working with emails returned by the imaplib client.
+    This class simplifies working with mails returned by the imaplib client.
 
-    :param email_body: The email body of a mail received from imaplib client.
-    :type email_body: str
+    :param mail_body: The mail body of a mail received from imaplib client.
+    :type mail_body: str
     """
 
-    def __init__(self, email_body):
+    def __init__(self, mail_body):
         super(Mail, self).__init__()
-        self.mail = email.message_from_string(email_body)
+        self.mail = email.message_from_string(mail_body)
 
     def has_attachments(self):
         """
