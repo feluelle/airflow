@@ -169,8 +169,8 @@ class QueuedLocalWorker(LocalWorkerBase):
 
     def do_work(self) -> None:
         while True:
-            key, command = self.task_queue.get()
             try:
+                key, command = self.task_queue.get()
                 if key is None or command is None:
                     # Received poison pill, no more tasks to run
                     break
