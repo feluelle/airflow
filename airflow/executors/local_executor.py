@@ -171,12 +171,14 @@ class QueuedLocalWorker(LocalWorkerBase):
         while True:
             try:
                 key, command = self.task_queue.get()
+            except EOFError:
+                self.log.debug('Work done.')
+                break
+            try:
                 if key is None or command is None:
                     # Received poison pill, no more tasks to run
                     break
                 self.execute_work(key=key, command=command)
-            except EOFError:
-                self.log.debug('Work done.')
             finally:
                 self.task_queue.task_done()
 
