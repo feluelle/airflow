@@ -175,6 +175,8 @@ class QueuedLocalWorker(LocalWorkerBase):
                     # Received poison pill, no more tasks to run
                     break
                 self.execute_work(key=key, command=command)
+            except EOFError:
+                self.log.debug('Work done.')
             finally:
                 self.task_queue.task_done()
 
